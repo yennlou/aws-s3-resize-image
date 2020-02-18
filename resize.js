@@ -14,8 +14,8 @@ module.exports.handler = async ({ Records }) => {
       Key: filename
     }).promise()
     const originImage = new Buffer.from(origin.Body)
-    const output = sharp(originImage).resize(200).toBuffer()
-    const newFilename = filename.replace('.', '-small.')
+    const output = await sharp(originImage).resize(320).toBuffer()
+    const newFilename = filename.replace('images/', 'thumbnails/')
     await s3.putObject({
       Bucket: BUCKET_NAME,
       Key: newFilename,

@@ -25,7 +25,7 @@ functions:
           bucket: ${self:custom.bucketName}
           event: s3:ObjectCreated:*
           rules:
-            - prefix: uploads/
+            - prefix: images/
           existing: true
   remove:
     handler: remove.handler
@@ -34,7 +34,7 @@ functions:
           bucket: ${self:custom.bucketName}
           event: s3:ObjectRemoved:*
           rules:
-            - prefix: uploads/
+            - prefix: images/
           existing: true
 resources:
   Resources:
