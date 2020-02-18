@@ -1,5 +1,8 @@
 service: resize-image
 
+custom:
+  bucketName: majo21-files
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -13,39 +16,35 @@ provider:
       Resource:
         - "Fn::GetAtt": [ ImageBucket, Arn ]
   environment:
-    BUCKET_NAME: !Ref BucketName
+    BUCKET_NAME: ${self:custom.bucketName}
 functions:
   resize:
     handler: resize.handler
     events:
       - s3:
-          bucket: !Ref BucketName
-          event:
-            - s3:ObjectCreated:*
+          bucket: ${self:custom.bucketName}
+          event: s3:ObjectCreated:*
           rules:
             - prefix: uploads/
+          existing: true
   remove:
     handler: remove.handler
     events:
       - s3:
-          bucket: !Ref BucketName
-          event:
-            - s3:ObjectRemoved:*
+          bucket: ${self:custom.bucketName}
+          event: s3:ObjectRemoved:*
           rules:
             - prefix: uploads/
+          existing: true
 resources:
-  Parameters:
-    BucketName:
-      Default: majo21-files,
-      Type: String
   Resources:
     ImageBucket:
       Type: AWS::S3::Bucket
       DeletionPolicy: Delete
       Properties:
         AccessControl: PublicRead
-        BucketName: !Ref BucketName
+        BucketName: ${self:custom.bucketName}
   Outputs:
     BucketUrl:
       Description: Image Bucket URL
-      Value: !Sub https://s3.console.aws.amazon.com/s3/buckets/${BucketName}
+      Value: !Sub https://s3.console.aws.amazon.com/s3/buckets/${self:custom.bucketName}
