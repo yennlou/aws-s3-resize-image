@@ -1,0 +1,51 @@
+service: resize-image
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-southeast-2
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+        - "s3:GetObject"
+        - "s3:DeleteObject"
+      Resource:
+        - "Fn::GetAtt": [ ImageBucket, Arn ]
+  environment:
+    BUCKET_NAME: !Ref BucketName
+functions:
+  resize:
+    handler: resize.handler
+    events:
+      - s3:
+          bucket: !Ref BucketName
+          event:
+            - s3:ObjectCreated:*
+          rules:
+            - prefix: uploads/
+  remove:
+    handler: remove.handler
+    events:
+      - s3:
+          bucket: !Ref BucketName
+          event:
+            - s3:ObjectRemoved:*
+          rules:
+            - prefix: uploads/
+resources:
+  Parameters:
+    BucketName:
+      Default: majo21-files,
+      Type: String
+  Resources:
+    ImageBucket:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Delete
+      Properties:
+        AccessControl: PublicRead
+        BucketName: !Ref BucketName
+  Outputs:
+    BucketUrl:
+      Description: Image Bucket URL
+      Value: !Sub https://s3.console.aws.amazon.com/s3/buckets/${BucketName}
